@@ -22,6 +22,11 @@ import pydot
 df_train = pd.read_csv('/home/umaend/Documents/zhaw/scripting/titanic/titanic3_train.csv', sep = ';')
 df_test = pd.read_csv('/home/umaend/Documents/zhaw/scripting/titanic/titanic3_test.csv', sep = ';')
 
+
+# Choose variables for modelling:
+df_train = df_train[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body', 'survived']]
+df_test = df_test[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body']]
+
 # kombinieren der beiden dataframes in einer Liste
 combine = [df_train, df_test]
 
@@ -46,7 +51,6 @@ df_3_test = df_test.loc[df_test['pclass'] == 3].fillna(value = values_3)
 
 df_test = pd.concat([df_1_test,df_2_test,df_3_test])
 
-
 # preview von allem:
 print(df_train.to_string())
 
@@ -63,9 +67,6 @@ survived['age'].plot.hist()
 died['age'].plot.hist()
 df_train['age'].plot.hist()
 
-# Choose variables for modelling:
-df_model_train = df_train[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body', 'survived']]
-df_model_test = df_test[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body']]
 
 def replace_nan(df, col, value_na, value_not_na):
     '''
@@ -79,34 +80,34 @@ def replace_nan(df, col, value_na, value_not_na):
     return df
 
 # alle nan in body und boat in beiden df ersetzen:
-replace_nan(df_model_train, 'boat', 'nein', 'ja')
-replace_nan(df_model_test, 'boat', 'nein', 'ja')
-replace_nan(df_model_train, 'body', 'nein', 'ja')
-replace_nan(df_model_test, 'body', 'nein', 'ja')
+replace_nan(df_train, 'boat', 'nein', 'ja')
+replace_nan(df_test, 'boat', 'nein', 'ja')
+replace_nan(df_train, 'body', 'nein', 'ja')
+replace_nan(df_test, 'body', 'nein', 'ja')
 
 
 # One-hot encoding:
-df_model_train = pd.get_dummies(df_model_train)
-df_model_test = pd.get_dummies(df_model_test)
+df_train = pd.get_dummies(df_train)
+df_test = pd.get_dummies(df_test)
 
 # Random Forest siehe hier:
 #https://towardsdatascience.com/random-forest-in-python-24d0893d51c0
 
 # pandas df in numpy array konvertieren.
 # labels are the values we want to predict:
-labels = np.array(df_model_train['survived'])
+labels = np.array(df_train['survived'])
 
 # remove labels from the features,
 # axis = 1 refers to the columns
 # (nur train-Daten):
-features_train = df_model_train.drop('survived', axis = 1)
+features_train = df_train.drop('survived', axis = 1)
 
 # für später sichern:
 feature_list = list(features_train.columns)
 
 # und ebenfalls in array konvertieren:
 features_train = np.array(features_train)
-features_test = np.array(df_model_test)
+features_test = np.array(df_test)
 
 # kontrollieren:
 print('Training Features Shape:', features_train.shape)
