@@ -19,8 +19,8 @@ import pydot
 # df_test = pd.read_csv('/Users/ursmaendli/Documents/02 zhaw/CAS_InfEng/Scripting/titanic3_test.csv', sep = ';')
 
 # linux:
-df = pd.read_csv('/home/umaend/Documents/zhaw/scripting/titanic3_train.csv', sep = ';')
-df_test = pd.read_csv('/home/umaend/Documents/zhaw/scripting/titanic3_test.csv', sep = ';')
+df = pd.read_csv('/home/umaend/Documents/zhaw/scripting/titanic/titanic3_train.csv', sep = ';')
+df_test = pd.read_csv('/home/umaend/Documents/zhaw/scripting/titanic/titanic3_test.csv', sep = ';')
 
 
 # Schöner machen!
