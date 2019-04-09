@@ -64,7 +64,7 @@ df['age'].plot.hist()
 
 # Choose variables for modelling:
 df_model = df[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body', 'survived']]
-df_model_test = df_test[['id', 'pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body']]
+df_model_test = df_test[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body']]
 
 def replace_nan(df, col, value_na, value_not_na):
     '''
