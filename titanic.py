@@ -19,51 +19,52 @@ import pydot
 # df_test = pd.read_csv('/Users/ursmaendli/Documents/02 zhaw/CAS_InfEng/Scripting/titanic3_test.csv', sep = ';')
 
 # linux:
-df = pd.read_csv('/home/umaend/Documents/zhaw/scripting/titanic/titanic3_train.csv', sep = ';')
+df_train = pd.read_csv('/home/umaend/Documents/zhaw/scripting/titanic/titanic3_train.csv', sep = ';')
 df_test = pd.read_csv('/home/umaend/Documents/zhaw/scripting/titanic/titanic3_test.csv', sep = ';')
 
+# kombinieren der beiden dataframes in einer Liste
+combine = [df_train, df_test]
 
 # Schöner machen!
-means = df.groupby('pclass').mean()
+means = df_train.groupby('pclass').mean()
 
 values_1 = {'fare' : 88.4387, 'age' : 39.3127}
 values_2 = {'fare' : 20.8136, 'age' : 29.7977}
 values_3 = {'fare' : 13.2293, 'age' : 14.8521}
 
 # ersetzen in train-Datensatz
-df_1 = df.loc[df['pclass'] == 1].fillna(value = values_1)
-df_2 = df.loc[df['pclass'] == 2].fillna(value = values_2)
-df_3 = df.loc[df['pclass'] == 3].fillna(value = values_3)
+df_train_1 = df_train.loc[df_train['pclass'] == 1].fillna(value = values_1)
+df_train_2 = df_train.loc[df_train['pclass'] == 2].fillna(value = values_2)
+df_train_3 = df_train.loc[df_train['pclass'] == 3].fillna(value = values_3)
 
-df = pd.concat([df_1,df_2,df_3])
-df = df.loc[df['pclass'] == 3].fillna(value = values_3)
+df_train = pd.concat([df_train_1,df_train_2,df_train_3])
 
 # ersetzen in test-Datensatz (Werte nehmen aus train-Datensatz):
-df_1_test = df_test.loc[df['pclass'] == 1].fillna(value = values_1)
-df_2_test = df_test.loc[df['pclass'] == 2].fillna(value = values_2)
-df_3_test = df_test.loc[df['pclass'] == 3].fillna(value = values_3)
+df_1_test = df_test.loc[df_test['pclass'] == 1].fillna(value = values_1)
+df_2_test = df_test.loc[df_test['pclass'] == 2].fillna(value = values_2)
+df_3_test = df_test.loc[df_test['pclass'] == 3].fillna(value = values_3)
 
 df_test = pd.concat([df_1_test,df_2_test,df_3_test])
 
 
 # preview von allem:
-print(df.to_string())
+print(df_train.to_string())
 
 # Dataset untersuchen und plotten:
-df.describe()
+df_train.describe()
 
-df.plot.scatter(x = 'pclass',
-                y = 'age',
-                c = 'survived')
+df_train.plot.scatter(x = 'pclass',
+                      y = 'age',
+                      c = 'survived')
 
-survived = df.loc[df['survived'] == 1]
-died = df.loc[df['survived'] == 0]
+survived = df_train.loc[df_train['survived'] == 1]
+died = df_train.loc[df_train['survived'] == 0]
 survived['age'].plot.hist()
 died['age'].plot.hist()
-df['age'].plot.hist()
+df_train['age'].plot.hist()
 
 # Choose variables for modelling:
-df_model = df[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body', 'survived']]
+df_model_train = df_train[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body', 'survived']]
 df_model_test = df_test[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body']]
 
 def replace_nan(df, col, value_na, value_not_na):
@@ -78,14 +79,14 @@ def replace_nan(df, col, value_na, value_not_na):
     return df
 
 # alle nan in body und boat in beiden df ersetzen:
-replace_nan(df_model, 'boat', 'nein', 'ja')
+replace_nan(df_model_train, 'boat', 'nein', 'ja')
 replace_nan(df_model_test, 'boat', 'nein', 'ja')
-replace_nan(df_model, 'body', 'nein', 'ja')
+replace_nan(df_model_train, 'body', 'nein', 'ja')
 replace_nan(df_model_test, 'body', 'nein', 'ja')
 
 
 # One-hot encoding:
-df_model = pd.get_dummies(df_model)
+df_model_train = pd.get_dummies(df_model_train)
 df_model_test = pd.get_dummies(df_model_test)
 
 # Random Forest siehe hier:
@@ -93,29 +94,29 @@ df_model_test = pd.get_dummies(df_model_test)
 
 # pandas df in numpy array konvertieren.
 # labels are the values we want to predict:
-labels = np.array(df_model['survived'])
+labels = np.array(df_model_train['survived'])
 
 # remove labels from the features,
 # axis = 1 refers to the columns
 # (nur train-Daten):
-features = df_model.drop('survived', axis = 1)
+features_train = df_model_train.drop('survived', axis = 1)
 
 # für später sichern:
-feature_list = list(features.columns)
+feature_list = list(features_train.columns)
 
 # und ebenfalls in array konvertieren:
-features = np.array(features)
+features_train = np.array(features_train)
 features_test = np.array(df_model_test)
 
 # kontrollieren:
-print('Training Features Shape:', features.shape)
+print('Training Features Shape:', features_train.shape)
 print('Training Labels Shape:', labels.shape)
 print('Testing Features Shape:', features_test.shape)
 
 # Klassifizierer nehmen, nicht Regressor!
 # Random Forest
 rf = RandomForestClassifier(n_estimators = 1000, random_state = 42)
-rf.fit(features, labels)
+rf.fit(features_train, labels)
 
 # an den Testdaten predicten:
 predictions = rf.predict(features_test)
