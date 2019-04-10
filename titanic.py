@@ -66,6 +66,9 @@ features_test = df.loc[df['partition'] == 'test'].drop(['survived', 'partition']
 features_train = pd.get_dummies(features_train)
 features_test = pd.get_dummies(features_test)
 
+# für später sichern:
+feature_list = list(features_train)
+
 # und ebenfalls in array konvertieren:
 features_train = np.array(features_train)
 features_test = np.array(features_test)
