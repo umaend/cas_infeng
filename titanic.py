@@ -18,37 +18,22 @@ import pydot
 train = pd.read_csv('../titanic/titanic3_train.csv', sep = ';')
 test = pd.read_csv('../titanic/titanic3_test.csv', sep = ';')
 
+# concat two data partitions and define a train/test-attribute:
+train['partition'] = 'train'
+test['partition'] = 'test'
+     
+frames = [train, test]
+df = pd.concat(frames, sort = False)
+
 # Choose variables for modelling:
-df_train = train[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body', 'survived']]
-df_test = test[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body']]
-
-# kombinieren der beiden dataframes in einer Liste
-combine = [df_train, df_test]
-
-# Schöner machen!
-means = df_train.groupby('pclass').mean()
+df = df[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body', 'survived', 'partition']]
 
 # alle nan in den Daten bei age und fare mit dem jeweiligen means, gemessen über die Klasse, ersetzen:
+means = df.groupby('pclass').mean()
+
 for index, row in means.iterrows():    
-    df_train.loc[(df_train.age.isnull()) & (df_train.pclass == index), 'age'] = means.loc[index, 'age']
-    df_train.loc[(df_train.fare.isnull()) & (df_train.pclass == index), 'fare'] = means.loc[index, 'fare']
-
-#dasselbe für test:
-for index, row in means.iterrows():    
-    df_test.loc[(df_test.age.isnull()) & (df_test.pclass == index), 'age'] = means.loc[index, 'age']
-    df_test.loc[(df_test.fare.isnull()) & (df_test.pclass == index), 'fare'] = means.loc[index, 'fare']
-
-
-df_train.plot.scatter(x = 'pclass',
-                      y = 'age',
-                      c = 'survived')
-
-survived = df_train.loc[df_train['survived'] == 1]
-died = df_train.loc[df_train['survived'] == 0]
-survived['age'].plot.hist()
-died['age'].plot.hist()
-df_train['age'].plot.hist()
-
+    df.loc[(df.age.isnull()) & (df.pclass == index), 'age'] = means.loc[index, 'age']
+    df.loc[(df.fare.isnull()) & (df.pclass == index), 'fare'] = means.loc[index, 'fare']
 
 def replace_nan(df, col, value_na, value_not_na):
     '''
@@ -61,34 +46,29 @@ def replace_nan(df, col, value_na, value_not_na):
     df.loc[mask_not_na, col] = value_not_na
     return df
 
-# alle nan in body und boat in beiden df ersetzen:
-replace_nan(df_train, 'boat', 'nein', 'ja')
-replace_nan(df_test, 'boat', 'nein', 'ja')
-replace_nan(df_train, 'body', 'nein', 'ja')
-replace_nan(df_test, 'body', 'nein', 'ja')
+# alle nan in body und boat ersetzen:
+replace_nan(df, 'boat', 'nein', 'ja')
+replace_nan(df, 'body', 'nein', 'ja')
 
-# One-hot encoding:
-df_train = pd.get_dummies(df_train)
-df_test = pd.get_dummies(df_test)
-
-# Random Forest siehe hier:
-#https://towardsdatascience.com/random-forest-in-python-24d0893d51c0
+### Random Forest
+#siege z.B. hier: https://towardsdatascience.com/random-forest-in-python-24d0893d51c0
 
 # pandas df in numpy array konvertieren.
 # labels are the values we want to predict:
-labels = np.array(df_train['survived'])
+labels = np.array(df.loc[df['partition'] == 'train', 'survived'])
 
-# remove labels from the features,
+# remove labels and partition from the features,
 # axis = 1 refers to the columns
-# (nur train-Daten):
-features_train = df_train.drop('survived', axis = 1)
+features_train = df.loc[df['partition'] == 'train'].drop(['survived', 'partition'], axis = 1)
+features_test = df.loc[df['partition'] == 'test'].drop(['survived', 'partition'], axis = 1)
 
-# für später sichern:
-feature_list = list(features_train.columns)
+# One-hot encoding:
+features_train = pd.get_dummies(features_train)
+features_test = pd.get_dummies(features_test)
 
 # und ebenfalls in array konvertieren:
 features_train = np.array(features_train)
-features_test = np.array(df_test)
+features_test = np.array(features_test)
 
 # kontrollieren:
 print('Training Features Shape:', features_train.shape)
