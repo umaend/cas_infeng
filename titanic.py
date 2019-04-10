@@ -15,12 +15,12 @@ from sklearn.tree import export_graphviz
 import pydot
 
 # read data:
-df_train = pd.read_csv('../titanic/titanic3_train.csv', sep = ';')
-df_test = pd.read_csv('../titanic/titanic3_test.csv', sep = ';')
+train = pd.read_csv('../titanic/titanic3_train.csv', sep = ';')
+test = pd.read_csv('../titanic/titanic3_test.csv', sep = ';')
 
 # Choose variables for modelling:
-df_train = df_train[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body', 'survived']]
-df_test = df_test[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body']]
+df_train = train[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body', 'survived']]
+df_test = test[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body']]
 
 # kombinieren der beiden dataframes in einer Liste
 combine = [df_train, df_test]
@@ -28,29 +28,16 @@ combine = [df_train, df_test]
 # Schöner machen!
 means = df_train.groupby('pclass').mean()
 
-values_1 = {'fare' : 88.4387, 'age' : 39.3127}
-values_2 = {'fare' : 20.8136, 'age' : 29.7977}
-values_3 = {'fare' : 13.2293, 'age' : 14.8521}
+# alle nan in den Daten bei age und fare mit dem jeweiligen means, gemessen über die Klasse, ersetzen:
+for index, row in means.iterrows():    
+    df_train.loc[(df_train.age.isnull()) & (df_train.pclass == index), 'age'] = means.loc[index, 'age']
+    df_train.loc[(df_train.fare.isnull()) & (df_train.pclass == index), 'fare'] = means.loc[index, 'fare']
 
-# ersetzen in train-Datensatz
-df_train_1 = df_train.loc[df_train['pclass'] == 1].fillna(value = values_1)
-df_train_2 = df_train.loc[df_train['pclass'] == 2].fillna(value = values_2)
-df_train_3 = df_train.loc[df_train['pclass'] == 3].fillna(value = values_3)
+#dasselbe für test:
+for index, row in means.iterrows():    
+    df_test.loc[(df_test.age.isnull()) & (df_test.pclass == index), 'age'] = means.loc[index, 'age']
+    df_test.loc[(df_test.fare.isnull()) & (df_test.pclass == index), 'fare'] = means.loc[index, 'fare']
 
-df_train = pd.concat([df_train_1,df_train_2,df_train_3])
-
-# ersetzen in test-Datensatz (Werte nehmen aus train-Datensatz):
-df_1_test = df_test.loc[df_test['pclass'] == 1].fillna(value = values_1)
-df_2_test = df_test.loc[df_test['pclass'] == 2].fillna(value = values_2)
-df_3_test = df_test.loc[df_test['pclass'] == 3].fillna(value = values_3)
-
-df_test = pd.concat([df_1_test,df_2_test,df_3_test])
-
-# preview von allem:
-print(df_train.to_string())
-
-# Dataset untersuchen und plotten:
-df_train.describe()
 
 df_train.plot.scatter(x = 'pclass',
                       y = 'age',
@@ -79,7 +66,6 @@ replace_nan(df_train, 'boat', 'nein', 'ja')
 replace_nan(df_test, 'boat', 'nein', 'ja')
 replace_nan(df_train, 'body', 'nein', 'ja')
 replace_nan(df_test, 'body', 'nein', 'ja')
-
 
 # One-hot encoding:
 df_train = pd.get_dummies(df_train)
@@ -119,7 +105,7 @@ predictions = rf.predict(features_test)
 
 #Output ausgeben (Form: key, value)
 np.column_stack((features_test[:,0], predictions))
-resultat = pd.concat([df_test[['id']], pd.DataFrame(predictions)], axis = 1, ignore_index=False)
+resultat = pd.concat([test[['id']], pd.DataFrame(predictions)], axis = 1, ignore_index=False)
 resultat.to_csv('resultat.csv', index = False, sep = ';')
 
 
