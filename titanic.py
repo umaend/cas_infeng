@@ -14,14 +14,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import export_graphviz
 import pydot
 
-# mac:
-# df = pd.read_csv('/Users/ursmaendli/Documents/02 zhaw/CAS_InfEng/Scripting/titanic3_train.csv', sep = ';')
-# df_test = pd.read_csv('/Users/ursmaendli/Documents/02 zhaw/CAS_InfEng/Scripting/titanic3_test.csv', sep = ';')
-
-# linux:
-df_train = pd.read_csv('/home/umaend/Documents/zhaw/scripting/titanic/titanic3_train.csv', sep = ';')
-df_test = pd.read_csv('/home/umaend/Documents/zhaw/scripting/titanic/titanic3_test.csv', sep = ';')
-
+# read data:
+df_train = pd.read_csv('../titanic/titanic3_train.csv', sep = ';')
+df_test = pd.read_csv('../titanic/titanic3_test.csv', sep = ';')
 
 # Choose variables for modelling:
 df_train = df_train[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body', 'survived']]
