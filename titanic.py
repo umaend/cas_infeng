@@ -32,8 +32,8 @@ df = df[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body', 'surv
 means = df.groupby('pclass').mean()
 
 for index, row in means.iterrows():    
-    df.loc[(df.age.isnull()) & (df.pclass == index), 'age'] = means.loc[index, 'age']
-    df.loc[(df.fare.isnull()) & (df.pclass == index), 'fare'] = means.loc[index, 'fare']
+    df.loc[(df['age'].isnull()) & (df.pclass == index), 'age'] = means.loc[index, 'age']
+    df.loc[(df['fare'].isnull()) & (df.pclass == index), 'fare'] = means.loc[index, 'fare']
 
 def replace_nan(df, col, value_na, value_not_na):
     '''
@@ -66,7 +66,7 @@ features_test = df.loc[df['partition'] == 'test'].drop(['survived', 'partition']
 features_train = pd.get_dummies(features_train)
 features_test = pd.get_dummies(features_test)
 
-# für später sichern:
+# für später sichern (Export Grafik):
 feature_list = list(features_train)
 
 # und ebenfalls in array konvertieren:
@@ -91,6 +91,8 @@ np.column_stack((features_test[:,0], predictions))
 resultat = pd.concat([test[['id']], pd.DataFrame(predictions)], axis = 1, ignore_index=False)
 resultat.to_csv('resultat.csv', index = False, sep = ';')
 
+# submit result here: https://openwhisk.eu-
+# de.bluemix.net/api/v1/web/SPLab_Scripting/default/titanic.html
 
 # Einen einzelnen Baum als Beispiel plotten:
 tree = rf.estimators_[5]
