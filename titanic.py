@@ -84,15 +84,17 @@ rf = RandomForestClassifier(n_estimators = 1000, random_state = 42)
 rf.fit(features_train, labels)
 
 # an den Testdaten predicten:
-predictions = rf.predict(features_test)
+predictions = rf.predict(features_test).astype(int)
 
 #Output ausgeben (Form: key, value)
-np.column_stack((features_test[:,0], predictions))
 resultat = pd.concat([test[['id']], pd.DataFrame(predictions)], axis = 1, ignore_index=False)
-resultat.to_csv('resultat.csv', index = False, sep = ';')
 
+#change column names according submission conditions:
+resultat.columns = ['key', 'value'] 
+
+resultat.to_csv('resultat.csv', index = False, sep = ';')
 # submit result here: https://openwhisk.eu-
-# de.bluemix.net/api/v1/web/SPLab_Scripting/default/titanic.html
+# https://openwhisk.eu-de.bluemix.net/api/v1/web/SPLab_Scripting/default/titanic.html
 
 # Einen einzelnen Baum als Beispiel plotten:
 tree = rf.estimators_[5]
