@@ -25,8 +25,8 @@ test['partition'] = 'test'
 frames = [train, test]
 df = pd.concat(frames, sort = False)
 
-# Choose variables for modelling:
-df = df[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'boat', 'body', 'survived', 'partition']]
+# Choose variables for modelling (remove body, boat for pre-accident model):
+df = df[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'survived', 'partition']]
 
 # alle nan in den Daten bei age und fare mit dem jeweiligen means, gemessen über die Klasse, ersetzen:
 means = df.groupby('pclass').mean()
@@ -46,12 +46,15 @@ def replace_nan(df, col, value_na, value_not_na):
     df.loc[mask_not_na, col] = value_not_na
     return df
 
-# alle nan in body und boat ersetzen:
-replace_nan(df, 'boat', 'nein', 'ja')
-replace_nan(df, 'body', 'nein', 'ja')
+# alle nan in body und boat ersetzen (falls vorhanden):
+for entry in ['boat', 'body']:
+    try:
+        replace_nan(df, entry, 'nein', 'ja')
+    except:
+        print("Spalte ", entry, "nicht vorhanden")
 
-### Random Forest
-#siege z.B. hier: https://towardsdatascience.com/random-forest-in-python-24d0893d51c0
+### Random Forest ##########################################################################################
+#siehe z.B. hier: https://towardsdatascience.com/random-forest-in-python-24d0893d51c0
 
 # pandas df in numpy array konvertieren.
 # labels are the values we want to predict:
